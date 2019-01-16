@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 void main() => runApp(MyApp());
 
@@ -8,9 +9,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue, accentColor: Colors.purple),
       home: MyHomePage(),
     );
   }
@@ -26,7 +25,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int dersKredi = 1;
   double dersHarfDegeri = 4;
   List<Ders> tumDersler;
-  static int sayac=0;
+  static int sayac = 0;
 
   var formKey = GlobalKey<FormState>();
   double ortalama = 0;
@@ -44,6 +43,7 @@ class _MyHomePageState extends State<MyHomePage> {
       //resizeToAvoidBottomPadding: false,
       appBar: AppBar(
         title: Text("Ortalama Hesapla"),
+        elevation: 0,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -53,11 +53,15 @@ class _MyHomePageState extends State<MyHomePage> {
         },
         child: Icon(Icons.add),
       ),
-      body: uygulamaGovdesi(),
+      body: OrientationBuilder(builder: (context, orientation) {
+
+          return uygulamaGovdesi(orientation);
+
+      }),
     );
   }
 
-  Widget uygulamaGovdesi() {
+  Widget uygulamaGovdesi(var orientation) {
     return Container(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -67,111 +71,120 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
             //color: Colors.pink.shade200,
             child: Form(
-                key: formKey,
-                child: Column(
-                  children: <Widget>[
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: "Ders Adı",
-                        hintText: "Ders adını giriniz",
-                        hintStyle: TextStyle(fontSize: 18),
-                        labelStyle: TextStyle(fontSize: 22),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide:
-                              BorderSide(color: Colors.purple, width: 2),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide:
-                              BorderSide(color: Colors.purple, width: 2),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(10),
-                          ),
+              key: formKey,
+              child: orientation == Orientation.portrait ? Column(
+                children: <Widget>[
+                  TextFormField(
+                    decoration: InputDecoration(
+                      labelText: "Ders Adı",
+                      hintText: "Ders adını giriniz",
+                      hintStyle: TextStyle(fontSize: 18),
+                      labelStyle: TextStyle(fontSize: 22),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.purple, width: 2),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.purple, width: 2),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(10),
                         ),
                       ),
-                      validator: (girilenDeger) {
-                        if (girilenDeger.length > 0) {
-                          return null;
-                        } else
-                          return "Ders adı boş olamaz";
-                      },
-                      onSaved: (kaydedilecekDeger) {
-                        dersAdi = kaydedilecekDeger;
-                        setState(() {
-                          tumDersler
-                              .add(Ders(dersAdi, dersHarfDegeri, dersKredi));
-                          ortalama =0;
-                          ortalamayiHesapla();
-                        });
-                      },
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Container(
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<int>(
-                              items: dersKredileriItems(),
-                              value: dersKredi,
-                              onChanged: (secilenKredi) {
-                                setState(() {
-                                  dersKredi = secilenKredi;
-                                });
-                              },
-                            ),
+                    validator: (girilenDeger) {
+                      if (girilenDeger.length > 0) {
+                        return null;
+                      } else
+                        return "Ders adı boş olamaz";
+                    },
+                    onSaved: (kaydedilecekDeger) {
+                      dersAdi = kaydedilecekDeger;
+                      setState(() {
+                        tumDersler.add(Ders(dersAdi, dersHarfDegeri, dersKredi,
+                            rastgeleRenkOlustur()));
+                        ortalama = 0;
+                        ortalamayiHesapla();
+                      });
+                    },
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Container(
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<int>(
+                            items: dersKredileriItems(),
+                            value: dersKredi,
+                            onChanged: (secilenKredi) {
+                              setState(() {
+                                dersKredi = secilenKredi;
+                              });
+                            },
                           ),
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 15, vertical: 4),
-                          margin: EdgeInsets.only(top: 10),
-                          decoration: BoxDecoration(
-                              border:
-                                  Border.all(color: Colors.purple, width: 2),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10))),
                         ),
-                        Container(
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<double>(
-                              items: dersHarfDegerleriItems(),
-                              value: dersHarfDegeri,
-                              onChanged: (secilenHarf) {
-                                setState(() {
-                                  dersHarfDegeri = secilenHarf;
-                                });
-                              },
-                            ),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 15, vertical: 4),
+                        margin: EdgeInsets.only(top: 10),
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.purple, width: 2),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10))),
+                      ),
+                      Container(
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<double>(
+                            items: dersHarfDegerleriItems(),
+                            value: dersHarfDegeri,
+                            onChanged: (secilenHarf) {
+                              setState(() {
+                                dersHarfDegeri = secilenHarf;
+                              });
+                            },
                           ),
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 15, vertical: 4),
-                          margin: EdgeInsets.only(top: 10),
-                          decoration: BoxDecoration(
-                              border:
-                                  Border.all(color: Colors.purple, width: 2),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10))),
                         ),
-                      ],
-                    ),
-                  ],
-                )),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 15, vertical: 4),
+                        margin: EdgeInsets.only(top: 10),
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.purple, width: 2),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10))),
+                      ),
+                    ],
+                  ),
+                ],
+              ) : Text("asdasd"),
+            ),
           ),
 
           Container(
             margin: EdgeInsets.symmetric(vertical: 10),
             height: 70,
             decoration: BoxDecoration(
+                color: Colors.blue,
                 border: BorderDirectional(
-              top: BorderSide(color: Colors.blue, width: 2),
-              bottom: BorderSide(color: Colors.blue, width: 2),
-            )),
+                  top: BorderSide(color: Colors.blue, width: 2),
+                  bottom: BorderSide(color: Colors.blue, width: 2),
+                )),
             child: Center(
               child: RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
                   children: [
-                    TextSpan(text: tumDersler.length == 0 ? " Lütfen ders ekleyin " : "Ortalama : ",style: TextStyle(fontSize: 30,color: Colors.black)),
-                    TextSpan(text: tumDersler.length == 0 ? "" :"${ortalama.toStringAsFixed(2)}",style: TextStyle(fontSize: 30,color: Colors.purple,fontWeight: FontWeight.bold)),
+                    TextSpan(
+                        text: tumDersler.length == 0
+                            ? " Lütfen ders ekleyin "
+                            : "Ortalama : ",
+                        style: TextStyle(fontSize: 30, color: Colors.white)),
+                    TextSpan(
+                        text: tumDersler.length == 0
+                            ? ""
+                            : "${ortalama.toStringAsFixed(2)}",
+                        style: TextStyle(
+                            fontSize: 40,
+                            color: Colors.purple,
+                            fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -181,15 +194,16 @@ class _MyHomePageState extends State<MyHomePage> {
           //DINAMIK LISTE TUTAN CONTAINER
           Expanded(
               child: Container(
-                  color: Colors.green.shade200,
                   child: ListView.builder(
-                    itemBuilder: _listeElemanlariniOlustur,
-                    itemCount: tumDersler.length,
-                  ))),
+            itemBuilder: _listeElemanlariniOlustur,
+            itemCount: tumDersler.length,
+          ))),
         ],
       ),
     );
   }
+
+
 
   List<DropdownMenuItem<int>> dersKredileriItems() {
     List<DropdownMenuItem<int>> krediler = [];
@@ -201,7 +215,7 @@ class _MyHomePageState extends State<MyHomePage> {
         value: i,
         child: Text(
           "$i Kredi",
-          style: TextStyle(fontSize: 30),
+          style: TextStyle(fontSize: 20),
         ),
       ));
     }
@@ -214,56 +228,56 @@ class _MyHomePageState extends State<MyHomePage> {
     harfler.add(DropdownMenuItem(
       child: Text(
         " AA ",
-        style: TextStyle(fontSize: 30),
+        style: TextStyle(fontSize: 20),
       ),
       value: 4,
     ));
     harfler.add(DropdownMenuItem(
       child: Text(
         " BA ",
-        style: TextStyle(fontSize: 30),
+        style: TextStyle(fontSize: 20),
       ),
       value: 3.5,
     ));
     harfler.add(DropdownMenuItem(
       child: Text(
         " BB ",
-        style: TextStyle(fontSize: 30),
+        style: TextStyle(fontSize: 20),
       ),
       value: 3,
     ));
     harfler.add(DropdownMenuItem(
       child: Text(
         " CB ",
-        style: TextStyle(fontSize: 30),
+        style: TextStyle(fontSize: 20),
       ),
       value: 2.5,
     ));
     harfler.add(DropdownMenuItem(
       child: Text(
         " CC ",
-        style: TextStyle(fontSize: 30),
+        style: TextStyle(fontSize: 20),
       ),
       value: 2,
     ));
     harfler.add(DropdownMenuItem(
       child: Text(
         " DC ",
-        style: TextStyle(fontSize: 30),
+        style: TextStyle(fontSize: 20),
       ),
       value: 1.5,
     ));
     harfler.add(DropdownMenuItem(
       child: Text(
         " DD ",
-        style: TextStyle(fontSize: 30),
+        style: TextStyle(fontSize: 20),
       ),
       value: 1,
     ));
     harfler.add(DropdownMenuItem(
       child: Text(
         " FF ",
-        style: TextStyle(fontSize: 30),
+        style: TextStyle(fontSize: 20),
       ),
       value: 0,
     ));
@@ -272,23 +286,35 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _listeElemanlariniOlustur(BuildContext context, int index) {
-
-    sayac ++;
+    sayac++;
     debugPrint(sayac.toString());
 
     return Dismissible(
       key: Key(sayac.toString()),
       direction: DismissDirection.startToEnd,
-
-      onDismissed: (direction){
+      onDismissed: (direction) {
         setState(() {
           tumDersler.removeAt(index);
           ortalamayiHesapla();
         });
       },
-      child: Card(
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: tumDersler[index].renk, width: 2),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        margin: EdgeInsets.all(4),
         child: ListTile(
+          leading: Icon(
+            Icons.done,
+            size: 36,
+            color: tumDersler[index].renk,
+          ),
           title: Text(tumDersler[index].ad),
+          trailing: Icon(
+            Icons.keyboard_arrow_right,
+            color: tumDersler[index].renk,
+          ),
           subtitle: Text(tumDersler[index].kredi.toString() +
               " kredi Ders Not Değer: " +
               tumDersler[index].harfDegeri.toString()),
@@ -298,22 +324,23 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void ortalamayiHesapla() {
+    double toplamNot = 0;
+    double toplamKredi = 0;
 
-    double toplamNot=0;
-    double toplamKredi=0;
-
-    for(var oankiDers in tumDersler){
-
-      var kredi=oankiDers.kredi;
+    for (var oankiDers in tumDersler) {
+      var kredi = oankiDers.kredi;
       var harfDegeri = oankiDers.harfDegeri;
 
-      toplamNot=toplamNot + (harfDegeri * kredi);
+      toplamNot = toplamNot + (harfDegeri * kredi);
       toplamKredi += kredi;
     }
 
     ortalama = toplamNot / toplamKredi;
+  }
 
-
+  Color rastgeleRenkOlustur() {
+    return Color.fromARGB(150 + Random().nextInt(105), Random().nextInt(255),
+        Random().nextInt(255), Random().nextInt(255));
   }
 }
 
@@ -321,6 +348,7 @@ class Ders {
   String ad;
   double harfDegeri;
   int kredi;
+  Color renk;
 
-  Ders(this.ad, this.harfDegeri, this.kredi);
+  Ders(this.ad, this.harfDegeri, this.kredi, this.renk);
 }
