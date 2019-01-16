@@ -40,7 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //resizeToAvoidBottomPadding: false,
+      resizeToAvoidBottomPadding: false,
       appBar: AppBar(
         title: Text("Ortalama Hesapla"),
         elevation: 0,
@@ -54,14 +54,16 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Icon(Icons.add),
       ),
       body: OrientationBuilder(builder: (context, orientation) {
-
-          return uygulamaGovdesi(orientation);
-
+        if (orientation == Orientation.portrait) {
+          return uygulamaGovdesi();
+        } else {
+          return uygulamaGovdesiLandscape();
+        }
       }),
     );
   }
 
-  Widget uygulamaGovdesi(var orientation) {
+  Widget uygulamaGovdesi() {
     return Container(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -72,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
             //color: Colors.pink.shade200,
             child: Form(
               key: formKey,
-              child: orientation == Orientation.portrait ? Column(
+              child: Column(
                 children: <Widget>[
                   TextFormField(
                     decoration: InputDecoration(
@@ -154,7 +156,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ],
                   ),
                 ],
-              ) : Text("asdasd"),
+              ),
             ),
           ),
 
@@ -203,7 +205,157 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-
+  Widget uygulamaGovdesiLandscape() {
+    return Container(
+        child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Expanded(
+          child: Column(
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
+                //color: Colors.pink.shade200,
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    children: <Widget>[
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: "Ders Adı",
+                          hintText: "Ders adını giriniz",
+                          hintStyle: TextStyle(fontSize: 18),
+                          labelStyle: TextStyle(fontSize: 22),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.purple, width: 2),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.purple, width: 2),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(10),
+                            ),
+                          ),
+                        ),
+                        validator: (girilenDeger) {
+                          if (girilenDeger.length > 0) {
+                            return null;
+                          } else
+                            return "Ders adı boş olamaz";
+                        },
+                        onSaved: (kaydedilecekDeger) {
+                          dersAdi = kaydedilecekDeger;
+                          setState(() {
+                            tumDersler.add(Ders(dersAdi, dersHarfDegeri,
+                                dersKredi, rastgeleRenkOlustur()));
+                            ortalama = 0;
+                            ortalamayiHesapla();
+                          });
+                        },
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Container(
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<int>(
+                                items: dersKredileriItems(),
+                                value: dersKredi,
+                                onChanged: (secilenKredi) {
+                                  setState(() {
+                                    dersKredi = secilenKredi;
+                                  });
+                                },
+                              ),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 15, vertical: 4),
+                            margin: EdgeInsets.only(top: 10),
+                            decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: Colors.purple, width: 2),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10))),
+                          ),
+                          Container(
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<double>(
+                                items: dersHarfDegerleriItems(),
+                                value: dersHarfDegeri,
+                                onChanged: (secilenHarf) {
+                                  setState(() {
+                                    dersHarfDegeri = secilenHarf;
+                                  });
+                                },
+                              ),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 15, vertical: 4),
+                            margin: EdgeInsets.only(top: 10),
+                            decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: Colors.purple, width: 2),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10))),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  margin: EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                      color: Colors.blue,
+                      border: BorderDirectional(
+                        top: BorderSide(color: Colors.blue, width: 2),
+                        bottom: BorderSide(color: Colors.blue, width: 2),
+                      )),
+                  child: Center(
+                    child: RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                              text: tumDersler.length == 0
+                                  ? " Lütfen ders ekleyin "
+                                  : "Ortalama : ",
+                              style:
+                                  TextStyle(fontSize: 30, color: Colors.white)),
+                          TextSpan(
+                              text: tumDersler.length == 0
+                                  ? ""
+                                  : "${ortalama.toStringAsFixed(2)}",
+                              style: TextStyle(
+                                  fontSize: 40,
+                                  color: Colors.purple,
+                                  fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          flex: 1,
+        ),
+        Expanded(
+          child: Container(
+            child: ListView.builder(
+              itemBuilder: _listeElemanlariniOlustur,
+              itemCount: tumDersler.length,
+            ),
+          ),
+        ),
+      ],
+    ));
+  }
 
   List<DropdownMenuItem<int>> dersKredileriItems() {
     List<DropdownMenuItem<int>> krediler = [];
